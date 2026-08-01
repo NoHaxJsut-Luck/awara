@@ -12,7 +12,7 @@
     <string name="errors_unknown">未知错误 %s</string>
     <string name="errors_validation_error">输入数据校验失败</string>
     <string name="errors_invalid_login">用户名或密码错误</string>
-    <string name="pagination_current">%d/%d 页</string>
+    <string name="pagination_current">%1$d/%2$d 页</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
     <string name="index_nav_subscription">订阅</string>

@@ -10,7 +10,7 @@
     <string name="errors_unknown">不明なエラー %s</string>
     <string name="errors_validation_error">入力が無効です</string>
     <string name="errors_invalid_login">ユーザー名、またはパスワードが無効</string>
-    <string name="pagination_current">%d/%dページ</string>
+    <string name="pagination_current">%1$d/%2$dページ</string>
     <string name="confirm">確定</string>
     <string name="cancel">キャンセル</string>
     <string name="index_nav_subscription">登録</string>
@@ -46,7 +46,7 @@
     <string name="premium">プレミアム</string>
     <string name="user">ユーザー</string>
     <string name="num_likes">好き：%d</string>
-    <string name="num_views">ビュー：%s</string>
+    <string name="num_views">ビュー：%d</string>
     <string name="sort_date">日にち</string>
     <string name="sort_trending">トレンド</string>
     <string name="sort_popularity">人気</string>

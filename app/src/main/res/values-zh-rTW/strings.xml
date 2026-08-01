@@ -10,7 +10,7 @@
     <string name="errors_unknown">未知錯誤 %s</string>
     <string name="errors_validation_error">您的輸入無效</string>
     <string name="errors_invalid_login">無效的用戶名或密碼</string>
-    <string name="pagination_current">頁 %d/%d</string>
+    <string name="pagination_current">頁 %1$d/%2$d</string>
     <string name="confirm">確認</string>
     <string name="cancel">取消</string>
     <string name="index_nav_subscription">訂閱</string>

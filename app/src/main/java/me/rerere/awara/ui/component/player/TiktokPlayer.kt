@@ -1,10 +1,8 @@
 package me.rerere.awara.ui.component.player
 
-import android.media.browse.MediaBrowser.MediaItem
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -19,6 +17,7 @@ import me.rerere.awara.ui.hooks.ForceSystemBarColor
 private const val TAG = "TiktokPlayer"
 
 @Composable
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 fun TiktokPlayer(
     generateVideoUrl: suspend () -> String
 ) {
