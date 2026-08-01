@@ -80,7 +80,7 @@ internal class SerializationResponseBodyConverter<T>(
         val string = body.string()
         return kotlin.runCatching { json.decodeFromString(type, string) }
             .onFailure {
-                Log.w(TAG, "bad json: $string")
+                Log.w(TAG, "Failed to decode JSON response (${string.length} chars)", it)
             }
             .getOrThrow()
     }

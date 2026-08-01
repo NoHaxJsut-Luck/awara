@@ -30,9 +30,7 @@ class LoginVM(private val userRepo: UserRepo) : ViewModel() {
                 events.emit(
                     LoginEvent.LoginSuccess(
                         token = it.token
-                    ).also {
-                        println(it.token)
-                    }
+                    )
                 )
             }.onError {
                 events.emit(LoginEvent.LoginFailed(it))

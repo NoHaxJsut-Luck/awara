@@ -15,6 +15,7 @@ import me.rerere.awara.util.JsonInstance
 import me.rerere.awara.util.await
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.IOException
 
 class MediaRepo(
     private val okHttpClient: OkHttpClient,
@@ -41,10 +42,13 @@ class MediaRepo(
             .header("x-version", hash)
             .get()
             .build()
-        val response = okHttpClient.newCall(request).await()
-        val body = response.body ?: error("No body")
-        val bodyString = body.string()
-        return JsonInstance.decodeFromString(bodyString)
+        return okHttpClient.newCall(request).await().use { response ->
+            if (!response.isSuccessful) {
+                throw IOException("Video source request failed with HTTP ${response.code}")
+            }
+            val bodyString = response.body?.string() ?: throw IOException("Video source response has no body")
+            JsonInstance.decodeFromString(bodyString)
+        }
     }
 
     suspend fun getRelatedVideos(id: String) = iwaraAPI.getRelatedVideo(id)
@@ -73,9 +77,11 @@ class MediaRepo(
 
     suspend fun getLightPlaylist(videoId: String) = iwaraAPI.getLightPlaylists(videoId)
 
-    suspend fun addVideoToPlaylist(videoId: String, playlistId: String) = iwaraAPI.addVideoToPlaylist(videoId, playlistId)
+    suspend fun addVideoToPlaylist(playlistId: String, videoId: String) =
+        iwaraAPI.addVideoToPlaylist(playlistId, videoId)
 
-    suspend fun removeVideoFromPlaylist(videoId: String, playlistId: String) = iwaraAPI.removeVideoFromPlaylist(videoId, playlistId)
+    suspend fun removeVideoFromPlaylist(playlistId: String, videoId: String) =
+        iwaraAPI.removeVideoFromPlaylist(playlistId, videoId)
 
     suspend fun createPlaylist(title: String) = iwaraAPI.createPlaylist(PlaylistCreationDto(title = title))
 

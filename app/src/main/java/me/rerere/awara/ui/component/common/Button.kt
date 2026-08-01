@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.takeOrElse
 fun Button(
     modifier: Modifier = Modifier,
     loading: Boolean = false,
+    enabled: Boolean = true,
     type: ButtonType = ButtonType.Default,
     onClick: () -> Unit,
     content: @Composable () -> Unit
@@ -36,6 +37,7 @@ fun Button(
             androidx.compose.material3.Button(
                 modifier = modifier,
                 onClick = onClick,
+                enabled = enabled,
             ) {
                 AnimatedVisibility(
                     visible = loading,
@@ -64,6 +66,7 @@ fun Button(
             OutlinedButton(
                 modifier = modifier,
                 onClick = onClick,
+                enabled = enabled,
             ) {
                 AnimatedVisibility(
                     visible = loading
@@ -91,6 +94,7 @@ fun Button(
             TextButton(
                 modifier = modifier,
                 onClick = onClick,
+                enabled = enabled,
             ) {
                 AnimatedVisibility(
                     visible = loading
@@ -118,6 +122,7 @@ fun Button(
             ElevatedButton(
                 modifier = modifier,
                 onClick = onClick,
+                enabled = enabled,
             ) {
                 AnimatedVisibility(
                     visible = loading
@@ -145,6 +150,7 @@ fun Button(
             FilledTonalButton(
                 modifier = modifier,
                 onClick = onClick,
+                enabled = enabled,
             ) {
                 AnimatedVisibility(
                     visible = loading

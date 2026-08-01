@@ -2,15 +2,12 @@ package me.rerere.awara.ui.component.player
 
 import android.content.Context
 import android.os.storage.StorageManager
-import android.util.Log
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import java.io.File
-
-private const val TAG = "PlayerCache"
 
 object PlayerCache {
     private lateinit var cacheFactory: CacheDataSource.Factory
@@ -33,7 +30,6 @@ object PlayerCache {
                 .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
                 .setCacheKeyFactory { dataSpec ->
                     val filename = dataSpec.uri.getQueryParameter("filename")
-                    Log.i(TAG, "rememberPlayerState: ${dataSpec.key} || $filename || ${dataSpec.uri}")
                     dataSpec.key ?: filename ?: dataSpec.uri.toString()
                 }
             this.cacheFactory = cacheFactory
