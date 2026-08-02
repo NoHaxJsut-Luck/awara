@@ -50,24 +50,23 @@ jobs:
       - name: Sign release APK
         if: github.event_name == 'workflow_dispatch'
         shell: bash
+        env:
+          AWARA_RELEASE_KEYSTORE_BASE64: ${{ secrets.AWARA_RELEASE_KEYSTORE_BASE64 }}
+          AWARA_RELEASE_SIGNING_PASSWORD: ${{ secrets.AWARA_RELEASE_SIGNING_PASSWORD }}
         run: |
           SIGNING_DIR="$RUNNER_TEMP/awara-signing"
-          SIGNING_PASSWORD="$(openssl rand -hex 24)"
+          if [[ -z "$AWARA_RELEASE_KEYSTORE_BASE64" || -z "$AWARA_RELEASE_SIGNING_PASSWORD" ]]; then
+            echo "Release signing secrets are not configured"
+            exit 1
+          fi
           mkdir -p "$SIGNING_DIR"
-          keytool -genkeypair -noprompt \
-            -keystore "$SIGNING_DIR/awara-release.jks" \
-            -storepass "$SIGNING_PASSWORD" \
-            -keypass "$SIGNING_PASSWORD" \
-            -alias awara \
-            -keyalg RSA \
-            -keysize 4096 \
-            -validity 10000 \
-            -dname "CN=Awara CI, OU=Android, O=Awara, L=Unknown, ST=Unknown, C=US"
+          printf '%s' "$AWARA_RELEASE_KEYSTORE_BASE64" | base64 --decode \
+            > "$SIGNING_DIR/awara-release.jks"
           "$ANDROID_HOME/build-tools/33.0.2/apksigner" sign \
             --ks "$SIGNING_DIR/awara-release.jks" \
-            --ks-key-alias awara \
-            --ks-pass "pass:$SIGNING_PASSWORD" \
-            --key-pass "pass:$SIGNING_PASSWORD" \
+            --ks-key-alias awara-release \
+            --ks-pass env:AWARA_RELEASE_SIGNING_PASSWORD \
+            --key-pass env:AWARA_RELEASE_SIGNING_PASSWORD \
             --out app/build/outputs/apk/release/awara-1.0.6-release.apk \
             app/build/outputs/apk/release/app-release-unsigned.apk
           "$ANDROID_HOME/build-tools/33.0.2/apksigner" verify --verbose \
