@@ -81,7 +81,10 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                     )
                 },
                 trailingIcon = {
-                    IconButton(onClick = { vm.search() }) {
+                    IconButton(
+                        onClick = { vm.search() },
+                        enabled = vm.query.isNotBlank() && vm.state.uiState != UiState.Loading
+                    ) {
                         Icon(Icons.Outlined.Search, null)
                     }
                 }
@@ -93,7 +96,7 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                     .fillMaxWidth(),
                 state = vm.state.uiState,
                 onErrorRetry = {
-                    vm.search()
+                    vm.retry()
                 }
             ) {
                 LazyVerticalStaggeredGrid(

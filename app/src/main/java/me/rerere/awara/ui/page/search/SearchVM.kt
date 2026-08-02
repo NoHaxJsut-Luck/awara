@@ -6,13 +6,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.rerere.awara.data.entity.Image
 import me.rerere.awara.data.entity.User
 import me.rerere.awara.data.entity.Video
 import me.rerere.awara.data.repo.MediaRepo
+import me.rerere.awara.data.source.Pager
 import me.rerere.awara.data.source.onError
 import me.rerere.awara.data.source.onException
+import me.rerere.awara.data.source.onSuccess
 import me.rerere.awara.data.source.runAPICatching
 import me.rerere.awara.data.source.stringResource
 import me.rerere.awara.ui.component.common.UiState
@@ -20,67 +24,61 @@ import me.rerere.awara.ui.component.common.UiState
 class SearchVM(
     private val mediaRepo: MediaRepo
 ) : ViewModel() {
+    private var searchJob: Job? = null
+
     var state by mutableStateOf(SearchState())
         private set
     var query by mutableStateOf("")
 
     fun search() {
-        viewModelScope.launch {
-            state = state.copy(uiState = UiState.Loading)
-            runAPICatching {
-                when (state.searchType) {
-                    "video" -> {
-                        val pager = mediaRepo.searchVideo(query, state.page - 1)
-                        state = if (pager.results.isEmpty()) {
-                            state.copy(
-                                uiState = UiState.Empty,
-                                count = pager.count,
-                                videoList = emptyList()
-                            )
-                        } else {
-                            state.copy(
-                                uiState = UiState.Success,
-                                count = pager.count,
-                                videoList = pager.results
-                            )
-                        }
-                    }
+        executeSearch(page = 1)
+    }
 
-                    "image" -> {
-                        val pager = mediaRepo.searchImage(query, state.page - 1)
-                        state = if (pager.results.isEmpty()) {
-                            state.copy(
-                                uiState = UiState.Empty,
-                                count = pager.count,
-                                imageList = emptyList()
-                            )
-                        } else {
-                            state.copy(
-                                uiState = UiState.Success,
-                                count = pager.count,
-                                imageList = pager.results
-                            )
-                        }
-                    }
+    fun retry() {
+        executeSearch(page = state.page)
+    }
 
-                    "user" -> {
-                        val pager = mediaRepo.searchUser(query, state.page - 1)
-                        state = if (pager.results.isEmpty()) {
-                            state.copy(
-                                uiState = UiState.Empty,
-                                count = pager.count,
-                                userList = emptyList()
-                            )
-                        } else {
-                            state.copy(
-                                uiState = UiState.Success,
-                                count = pager.count,
-                                userList = pager.results
-                            )
-                        }
-                    }
+    private fun executeSearch(page: Int) {
+        val normalizedQuery = query.trim()
+        if (normalizedQuery.isEmpty()) {
+            searchJob?.cancel()
+            state = SearchState(searchType = state.searchType)
+            return
+        }
 
-                    else -> {}
+        searchJob?.cancel()
+        val requestedType = state.searchType
+        val requestedPage = page.coerceAtLeast(1)
+        state = state.copy(
+            uiState = UiState.Loading,
+            page = requestedPage,
+            count = 0,
+            videoList = emptyList(),
+            imageList = emptyList(),
+            userList = emptyList()
+        )
+        searchJob = viewModelScope.launch {
+            val result = runAPICatching {
+                when (requestedType) {
+                    "video" -> SearchResult.Videos(
+                        mediaRepo.searchVideo(normalizedQuery, requestedPage - 1)
+                    )
+                    "image" -> SearchResult.Images(
+                        mediaRepo.searchImage(normalizedQuery, requestedPage - 1)
+                    )
+                    "user" -> SearchResult.Users(
+                        mediaRepo.searchUser(normalizedQuery, requestedPage - 1)
+                    )
+                    else -> error("Unsupported search type: $requestedType")
+                }
+            }
+            if (!isActive) return@launch
+
+            result.onSuccess { searchResult ->
+                state = when (searchResult) {
+                    is SearchResult.Videos -> state.withVideos(searchResult.pager)
+                    is SearchResult.Images -> state.withImages(searchResult.pager)
+                    is SearchResult.Users -> state.withUsers(searchResult.pager)
                 }
             }.onError {
                 state = state.copy(uiState = UiState.Error(
@@ -99,14 +97,16 @@ class SearchVM(
     }
 
     fun jumpToPage(page: Int) {
-        state = state.copy(page = page)
-        search()
+        executeSearch(page = page)
     }
 
     fun updateSearchType(type: String) {
-        state = state.copy(searchType = type)
+        if (type == state.searchType) return
+
+        searchJob?.cancel()
+        state = SearchState(searchType = type)
         if (query.isNotBlank()) {
-            search()
+            executeSearch(page = 1)
         }
     }
 
@@ -118,5 +118,29 @@ class SearchVM(
         val videoList: List<Video> = emptyList(),
         val imageList: List<Image> = emptyList(),
         val userList: List<User> = emptyList(),
-    )
+    ) {
+        fun withVideos(pager: Pager<Video>) = copy(
+            uiState = if (pager.results.isEmpty()) UiState.Empty else UiState.Success,
+            count = pager.count,
+            videoList = pager.results
+        )
+
+        fun withImages(pager: Pager<Image>) = copy(
+            uiState = if (pager.results.isEmpty()) UiState.Empty else UiState.Success,
+            count = pager.count,
+            imageList = pager.results
+        )
+
+        fun withUsers(pager: Pager<User>) = copy(
+            uiState = if (pager.results.isEmpty()) UiState.Empty else UiState.Success,
+            count = pager.count,
+            userList = pager.results
+        )
+    }
+
+    private sealed interface SearchResult {
+        data class Videos(val pager: Pager<Video>) : SearchResult
+        data class Images(val pager: Pager<Image>) : SearchResult
+        data class Users(val pager: Pager<User>) : SearchResult
+    }
 }

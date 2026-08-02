@@ -89,9 +89,12 @@ class MediaRepo(
 
     suspend fun getFavoriteImages(page: Int): Pager<FavoriteImage> = iwaraAPI.getFavoriteImages(page = page)
 
-    suspend fun searchVideo(query: String, page: Int): Pager<Video> = iwaraAPI.searchVideo(query = query, page = page, type = "video")
+    suspend fun searchVideo(query: String, page: Int): Pager<Video> =
+        iwaraAPI.searchVideo(query = query, page = page, type = "videos")
 
-    suspend fun searchImage(query: String, page: Int): Pager<Image> = iwaraAPI.searchImage(query = query, page = page, type = "image")
+    suspend fun searchImage(query: String, page: Int): Pager<Image> =
+        iwaraAPI.searchImage(query = query, page = page, type = "images")
 
-    suspend fun searchUser(query: String, page: Int): Pager<User> = iwaraAPI.searchUser(query = query, page = page, type = "user")
+    suspend fun searchUser(query: String, page: Int): Pager<User> =
+        iwaraAPI.searchUser(query = query, page = page, type = "users")
 }

@@ -43,6 +43,36 @@ jobs:
       - name: Test, lint, and build
         run: ./gradlew --no-daemon --stacktrace testDebugUnitTest lintDebug assembleDebug
 
+      - name: Build release APK
+        if: github.event_name == 'workflow_dispatch'
+        run: ./gradlew --no-daemon --stacktrace assembleRelease
+
+      - name: Sign release APK
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          SIGNING_DIR="$RUNNER_TEMP/awara-signing"
+          SIGNING_PASSWORD="$(openssl rand -hex 24)"
+          mkdir -p "$SIGNING_DIR"
+          keytool -genkeypair -noprompt \
+            -keystore "$SIGNING_DIR/awara-release.jks" \
+            -storepass "$SIGNING_PASSWORD" \
+            -keypass "$SIGNING_PASSWORD" \
+            -alias awara \
+            -keyalg RSA \
+            -keysize 4096 \
+            -validity 10000 \
+            -dname "CN=Awara CI, OU=Android, O=Awara, L=Unknown, ST=Unknown, C=US"
+          "$ANDROID_HOME/build-tools/33.0.2/apksigner" sign \
+            --ks "$SIGNING_DIR/awara-release.jks" \
+            --ks-key-alias awara \
+            --ks-pass "pass:$SIGNING_PASSWORD" \
+            --key-pass "pass:$SIGNING_PASSWORD" \
+            --out app/build/outputs/apk/release/awara-1.0.6-release.apk \
+            app/build/outputs/apk/release/app-release-unsigned.apk
+          "$ANDROID_HOME/build-tools/33.0.2/apksigner" verify --verbose \
+            app/build/outputs/apk/release/awara-1.0.6-release.apk
+
       - name: Upload debug APK
         if: success()
         uses: actions/upload-artifact@v7
@@ -51,6 +81,15 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload release APK
+        if: github.event_name == 'workflow_dispatch' && success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: awara-release-${{ github.sha }}
+          path: app/build/outputs/apk/release/awara-1.0.6-release.apk
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload build reports
         if: always()
