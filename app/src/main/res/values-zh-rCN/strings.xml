@@ -12,7 +12,7 @@
     <string name="errors_unknown">未知错误 %s</string>
     <string name="errors_validation_error">输入数据校验失败</string>
     <string name="errors_invalid_login">用户名或密码错误</string>
-    <string name="pagination_current">%d/%d 页</string>
+    <string name="pagination_current">%1$d/%2$d 页</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
     <string name="index_nav_subscription">订阅</string>
@@ -54,6 +54,10 @@
     <string name="sort_popularity">流行</string>
     <string name="sort_views">播放量</string>
     <string name="sort_likes">喜欢</string>
+    <string name="search_sort_date_ascending">时间正排（最早优先）</string>
+    <string name="search_sort_date_descending">时间倒排（最新优先）</string>
+    <string name="search_sort_likes">收藏数</string>
+    <string name="search_sort_views">观看数</string>
     <string name="drawer_favorite">最爱</string>
     <string name="drawer_playlists">播单</string>
     <string name="drawer_downloads">下载</string>

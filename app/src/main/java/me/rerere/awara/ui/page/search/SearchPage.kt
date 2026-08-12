@@ -24,14 +24,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.rerere.awara.R
+import me.rerere.awara.data.repo.SearchSort
 import me.rerere.awara.ui.component.common.BackButton
 import me.rerere.awara.ui.component.common.SelectButton
 import me.rerere.awara.ui.component.common.SelectOption
+import me.rerere.awara.ui.component.common.UiState
 import me.rerere.awara.ui.component.common.UiStateBox
 import me.rerere.awara.ui.component.ext.DynamicStaggeredGridCells
 import me.rerere.awara.ui.component.iwara.MediaCard
 import me.rerere.awara.ui.component.iwara.PaginationBar
 import me.rerere.awara.ui.component.iwara.UserCard
+import me.rerere.awara.ui.component.iwara.param.SortButton
+import me.rerere.awara.ui.component.iwara.param.SortOption
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -81,11 +85,22 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                     )
                 },
                 trailingIcon = {
-                    IconButton(onClick = { vm.search() }) {
+                    IconButton(
+                        onClick = { vm.search() },
+                        enabled = vm.query.isNotBlank() && vm.state.uiState != UiState.Loading
+                    ) {
                         Icon(Icons.Outlined.Search, null)
                     }
                 }
             )
+
+            if (vm.state.searchType != "user") {
+                SortButton(
+                    sort = vm.state.searchSort.name,
+                    onSortChange = { vm.updateSearchSort(SearchSort.valueOf(it)) },
+                    sortOptions = SearchSortOptions,
+                )
+            }
 
             UiStateBox(
                 modifier = Modifier
@@ -93,7 +108,7 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                     .fillMaxWidth(),
                 state = vm.state.uiState,
                 onErrorRetry = {
-                    vm.search()
+                    vm.retry()
                 }
             ) {
                 LazyVerticalStaggeredGrid(
@@ -147,4 +162,23 @@ private val SearchOptions = listOf(
             Text(stringResource(R.string.user))
         }
     )
+)
+
+private val SearchSortOptions = listOf(
+    SortOption(
+        name = SearchSort.DATE_ASCENDING.name,
+        label = { Text(stringResource(R.string.search_sort_date_ascending)) },
+    ),
+    SortOption(
+        name = SearchSort.DATE_DESCENDING.name,
+        label = { Text(stringResource(R.string.search_sort_date_descending)) },
+    ),
+    SortOption(
+        name = SearchSort.LIKES.name,
+        label = { Text(stringResource(R.string.search_sort_likes)) },
+    ),
+    SortOption(
+        name = SearchSort.VIEWS.name,
+        label = { Text(stringResource(R.string.search_sort_views)) },
+    ),
 )

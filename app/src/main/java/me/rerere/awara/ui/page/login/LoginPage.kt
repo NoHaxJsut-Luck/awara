@@ -52,11 +52,14 @@ fun LoginPage(
     val messageProvider = LocalMessageProvider.current
     val router = LocalRouterProvider.current
     var username by rememberStringPreference(key = "login.username", default = "")
-    var password by rememberStringPreference(key = "login.password", default = "")
+    var password by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
+        // Remove credentials persisted by older versions of the app.
+        mmkvPreference.remove("login.password")
         vm.events.collectLatest {
             when (it) {
                 is LoginEvent.LoginSuccess -> {
+                    password = ""
                     messageProvider.success {
                         Text("登录成功")
                     }
@@ -139,7 +142,8 @@ fun LoginPage(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     type = ButtonType.Default,
-                    loading = vm.state.loading
+                    loading = vm.state.loading,
+                    enabled = !vm.state.loading && username.isNotBlank() && password.isNotBlank()
                 ) {
                     Text(text = stringResource(R.string.login_button))
                 }

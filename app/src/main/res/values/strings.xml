@@ -11,7 +11,7 @@
     <string name="errors_unknown">Unknown error %s</string>
     <string name="errors_validation_error">Your input is invalid</string>
     <string name="errors_invalid_login">Invalid username or password</string>
-    <string name="pagination_current">Page %d/%d</string>
+    <string name="pagination_current">Page %1$d/%2$d</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="index_nav_subscription">Subscription</string>
@@ -53,6 +53,10 @@
     <string name="sort_popularity">Popularity</string>
     <string name="sort_views">Views</string>
     <string name="sort_likes">Likes</string>
+    <string name="search_sort_date_ascending">Oldest first</string>
+    <string name="search_sort_date_descending">Newest first</string>
+    <string name="search_sort_likes">Most liked</string>
+    <string name="search_sort_views">Most viewed</string>
     <string name="drawer_favorite">Favorites</string>
     <string name="drawer_playlists">Playlists</string>
     <string name="drawer_downloads">Downloads</string>

@@ -187,14 +187,16 @@ interface IwaraAPI {
     suspend fun searchVideo(
         @Query("type") type: String,
         @Query("query") query: String,
-        @Query("page") page: Int
+        @Query("page") page: Int,
+        @Query("sort") sort: String,
     ): Pager<Video>
 
     @GET("/search")
     suspend fun searchImage(
         @Query("type") type: String,
         @Query("query") query: String,
-        @Query("page") page: Int
+        @Query("page") page: Int,
+        @Query("sort") sort: String,
     ): Pager<Image>
 
     @GET("/search")

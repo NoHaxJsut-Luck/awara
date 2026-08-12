@@ -1,78 +1,65 @@
 package me.rerere.awara.di
 
+import me.rerere.awara.BuildConfig
 import me.rerere.awara.data.source.HitokotoAPI
 import me.rerere.awara.data.source.IwaraAPI
 import me.rerere.awara.data.source.UpdateAPI
+import me.rerere.awara.util.isTrustedIwaraHost
 import me.rerere.awara.util.SerializationConverterFactory
 import me.rerere.compose_setting.preference.mmkvPreference
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 
-private const val TAG = "NetworkModule"
 private const val UA = "Mozilla/5.0 (Linux; Android 12; Pixel 6 Build/SD1A.210817.023; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/94.0.4606.71 Mobile Safari/537.36"
 
 val networkModule = module {
     single {
-        OkHttpClient.Builder()
-            .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+        val builder = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .callTimeout(45, TimeUnit.SECONDS)
             .addInterceptor {
                 val request = it.request()
                 val url = request.url
                 val newRequest = request.newBuilder()
                     .apply {
-                        if(url.host.contains("iwara.tv")) {
-                            addHeader("User-Agent", UA)
-                            addHeader("Origin", "https://www.iwara.tv")
-                            addHeader("Referer", "https://www.iwara.tv/")
-                            addHeader("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
+                        if (isTrustedIwaraHost(url.host)) {
+                            header("User-Agent", UA)
+                            header("Origin", "https://www.iwara.tv")
+                            header("Referer", "https://www.iwara.tv/")
+                            header("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
 
-                            if (url.toString() == "https://api.iwara.tv/user/token") {
-                                if ("refresh_token" in mmkvPreference) {
-                                    addHeader(
-                                        "Authorization",
-                                        "Bearer ${mmkvPreference.getString("refresh_token", "")}"
-                                    )
-                                }
+                            val token = if (
+                                url.host.equals("api.iwara.tv", ignoreCase = true) &&
+                                url.encodedPath == "/user/token"
+                            ) {
+                                mmkvPreference.getString("refresh_token", "")
                             } else {
-                                if ("access_token" in mmkvPreference) {
-                                    addHeader(
-                                        "Authorization",
-                                        "Bearer ${mmkvPreference.getString("access_token", "")}"
-                                    )
-                                }
+                                mmkvPreference.getString("access_token", "")
+                            }
+                            if (!token.isNullOrBlank()) {
+                                header("Authorization", "Bearer $token")
                             }
                         }
                     }
                     .build()
                 it.proceed(newRequest)
             }
-            .addInterceptor(
+
+        if (BuildConfig.DEBUG) {
+            builder.addInterceptor(
                 HttpLoggingInterceptor().apply {
-                    setLevel(HttpLoggingInterceptor.Level.BODY)
+                    redactHeader("Authorization")
+                    setLevel(HttpLoggingInterceptor.Level.BASIC)
                 }
             )
-//            .addInterceptor {
-//                val request = it.request()
-//                val url = request.url
-//                if(url.pathSegments.contains("video")){
-//                    // 403模拟
-//                    val response = okhttp3.Response.Builder()
-//                        .request(request)
-//                        .protocol(okhttp3.Protocol.HTTP_1_1)
-//                        .code(403)
-//                        .message("Forbidden")
-//                        .body(
-//                            "".toResponseBody()
-//                        )
-//                        .build()
-//                    response
-//                } else {
-//                    it.proceed(request)
-//                }
-//            }
-            .build()
+        }
+
+        builder.build()
     }
 
     single {
