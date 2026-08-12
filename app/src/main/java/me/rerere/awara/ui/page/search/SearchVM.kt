@@ -13,6 +13,7 @@ import me.rerere.awara.data.entity.Image
 import me.rerere.awara.data.entity.User
 import me.rerere.awara.data.entity.Video
 import me.rerere.awara.data.repo.MediaRepo
+import me.rerere.awara.data.repo.SearchSort
 import me.rerere.awara.data.source.Pager
 import me.rerere.awara.data.source.onError
 import me.rerere.awara.data.source.onException
@@ -42,12 +43,16 @@ class SearchVM(
         val normalizedQuery = query.trim()
         if (normalizedQuery.isEmpty()) {
             searchJob?.cancel()
-            state = SearchState(searchType = state.searchType)
+            state = SearchState(
+                searchType = state.searchType,
+                searchSort = state.searchSort,
+            )
             return
         }
 
         searchJob?.cancel()
         val requestedType = state.searchType
+        val requestedSort = state.searchSort
         val requestedPage = page.coerceAtLeast(1)
         state = state.copy(
             uiState = UiState.Loading,
@@ -61,10 +66,10 @@ class SearchVM(
             val result = runAPICatching {
                 when (requestedType) {
                     "video" -> SearchResult.Videos(
-                        mediaRepo.searchVideo(normalizedQuery, requestedPage - 1)
+                        mediaRepo.searchVideo(normalizedQuery, requestedPage - 1, requestedSort)
                     )
                     "image" -> SearchResult.Images(
-                        mediaRepo.searchImage(normalizedQuery, requestedPage - 1)
+                        mediaRepo.searchImage(normalizedQuery, requestedPage - 1, requestedSort)
                     )
                     "user" -> SearchResult.Users(
                         mediaRepo.searchUser(normalizedQuery, requestedPage - 1)
@@ -104,7 +109,17 @@ class SearchVM(
         if (type == state.searchType) return
 
         searchJob?.cancel()
-        state = SearchState(searchType = type)
+        state = SearchState(searchType = type, searchSort = state.searchSort)
+        if (query.isNotBlank()) {
+            executeSearch(page = 1)
+        }
+    }
+
+    fun updateSearchSort(sort: SearchSort) {
+        if (sort == state.searchSort) return
+
+        searchJob?.cancel()
+        state = SearchState(searchType = state.searchType, searchSort = sort)
         if (query.isNotBlank()) {
             executeSearch(page = 1)
         }
@@ -113,6 +128,7 @@ class SearchVM(
     data class SearchState(
         val uiState: UiState = UiState.Initial,
         val searchType: String = "video",
+        val searchSort: SearchSort = SearchSort.DATE_DESCENDING,
         val page: Int = 1,
         val count: Int = 0,
         val videoList: List<Video> = emptyList(),

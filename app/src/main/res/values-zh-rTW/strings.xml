@@ -52,6 +52,10 @@
     <string name="sort_popularity">人氣</string>
     <string name="sort_views">觀點</string>
     <string name="sort_likes">喜歡</string>
+    <string name="search_sort_date_ascending">時間正排（最早優先）</string>
+    <string name="search_sort_date_descending">時間倒排（最新優先）</string>
+    <string name="search_sort_likes">收藏數</string>
+    <string name="search_sort_views">觀看數</string>
     <string name="drawer_favorite">收藏夾</string>
     <string name="drawer_playlists">播放列表</string>
     <string name="drawer_downloads">下載</string>

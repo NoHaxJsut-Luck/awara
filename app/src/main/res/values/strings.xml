@@ -53,6 +53,10 @@
     <string name="sort_popularity">Popularity</string>
     <string name="sort_views">Views</string>
     <string name="sort_likes">Likes</string>
+    <string name="search_sort_date_ascending">Oldest first</string>
+    <string name="search_sort_date_descending">Newest first</string>
+    <string name="search_sort_likes">Most liked</string>
+    <string name="search_sort_views">Most viewed</string>
     <string name="drawer_favorite">Favorites</string>
     <string name="drawer_playlists">Playlists</string>
     <string name="drawer_downloads">Downloads</string>

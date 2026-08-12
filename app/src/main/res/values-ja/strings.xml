@@ -52,6 +52,10 @@
     <string name="sort_popularity">人気</string>
     <string name="sort_views">ビュー</string>
     <string name="sort_likes">好き</string>
+    <string name="search_sort_date_ascending">古い順</string>
+    <string name="search_sort_date_descending">新しい順</string>
+    <string name="search_sort_likes">いいね数順</string>
+    <string name="search_sort_views">再生数順</string>
     <string name="drawer_favorite">お気に入り</string>
     <string name="drawer_playlists">プレイリスト</string>
     <string name="drawer_downloads">ダウンロード</string>
